@@ -18,20 +18,36 @@ type Message = {
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const [message, setMessage] = useState('Hello');
+  const [message, setMessage] = useState('');
+
+  const [name, setName] = useState('')
 
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     socketRef.current = io(SOCKET_URL);
+
     socketRef.current.on('init-messages-published', (messages: Message[]) => {
       setMessages(messages)
     })
+
+    socketRef.current.on('new-message-sent', (newMessage: Message) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
 
     return () => {
       socketRef.current?.disconnect();
     };
   }, []);
+
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    chatContainerRef.current?.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -40,10 +56,16 @@ function App() {
     }
   };
 
+  const handleSendName = () => {
+    if (name.trim()) {
+      socketRef.current?.emit('client-name-sent', name);
+    }
+  };
+
   return (
     <div className={styles.App}>
       <div >
-        <div className={styles['chat-container']}>
+        <div className={styles['chat-container']} ref={chatContainerRef}>
           {messages.map(({ id, user, message }) => (
             <div className={styles.message} key={id}>
               <b>{user.name}: </b>
@@ -53,9 +75,14 @@ function App() {
           ))}
         </div>
         <div className={styles['input-container']}>
+          <input type="text" placeholder='Enter name' value={name} onChange={(e) => setName(e.currentTarget.value)} />
+          <button onClick={handleSendName}>APPROVE NAME</button>
+        </div>
+        <div className={styles['input-container']}>
           <textarea
             rows={3}
             value={message}
+            placeholder='Enter message'
             onChange={(e) => setMessage(e.target.value)}
           />
           <button onClick={handleSendMessage}>SEND</button>
