@@ -1,14 +1,22 @@
 import { io, Socket } from 'socket.io-client';
 import { useEffect, useRef, useState } from 'react';
-import styles from './App.module.css'; // Using CSS modules for better scoping
+import styles from './App.module.css';
 
-const SOCKET_URL = 'http://localhost:3010'; // Extracted to a constant for reusability
+const SOCKET_URL = 'http://localhost:3010';
+
+type User = {
+  id: string;
+  name: string;
+};
+
+type Message = {
+  id: string;
+  message: string;
+  user: User;
+};
 
 function App() {
-  const [messages, setMessages] = useState([
-    { message: "Hello, Viktor", id: "23f2332", user: { id: "sddsdsfds", name: "Dimych" } },
-    { message: "Hello, Dimych", id: "23fd32c23", user: { id: "eefw2", name: "Viktor" } }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [message, setMessage] = useState('Hello');
 
@@ -16,6 +24,9 @@ function App() {
 
   useEffect(() => {
     socketRef.current = io(SOCKET_URL);
+    socketRef.current.on('init-messages-published', (messages: Message[]) => {
+      setMessages(messages)
+    })
 
     return () => {
       socketRef.current?.disconnect();
@@ -31,15 +42,17 @@ function App() {
 
   return (
     <div className={styles.App}>
-      <div className={styles.chatContainer}>
-        {messages.map(({ id, user, message }) => (
-          <div className={styles.message} key={id}>
-            <b>{user.name}: </b>
-            <span>{message}</span>
-            <hr />
-          </div>
-        ))}
-        <div className={styles.inputContainer}>
+      <div >
+        <div className={styles['chat-container']}>
+          {messages.map(({ id, user, message }) => (
+            <div className={styles.message} key={id}>
+              <b>{user.name}: </b>
+              <span>{message}</span>
+              <hr />
+            </div>
+          ))}
+        </div>
+        <div className={styles['input-container']}>
           <textarea
             rows={3}
             value={message}
