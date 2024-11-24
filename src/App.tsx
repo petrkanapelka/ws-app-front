@@ -18,9 +18,11 @@ type Message = {
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState<string>('');
 
-  const [name, setName] = useState('')
+  const [name, setName] = useState<string>('')
+
+  const [isScrollMode, setScrollMode] = useState<boolean>(true)
 
   const socketRef = useRef<Socket | null>(null);
 
@@ -43,11 +45,21 @@ function App() {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    chatContainerRef.current?.scrollTo({
-      top: chatContainerRef.current.scrollHeight,
-      behavior: 'smooth',
-    });
-  }, [messages]);
+    if (isScrollMode) {
+      chatContainerRef.current?.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [isScrollMode, messages]);
+
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
+      setScrollMode(isAtBottom);
+    }
+  };
 
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -64,8 +76,8 @@ function App() {
 
   return (
     <div className={styles.App}>
-      <div >
-        <div className={styles['chat-container']} ref={chatContainerRef}>
+      <div className={styles['parent-container']}>
+        <div className={styles['chat-container']} ref={chatContainerRef} onScroll={handleScroll}>
           {messages.map(({ id, user, message }) => (
             <div className={styles.message} key={id}>
               <b>{user.name}: </b>
