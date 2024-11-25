@@ -15,93 +15,6 @@ export type Message = {
   user: User;
 };
 
-
-// function App() {
-//   const dispatch = useAppDispatch()
-
-//   const [message, setMessage] = useState<string>('');
-
-//   const [name, setName] = useState<string>('')
-
-//   const [isScrollMode, setScrollMode] = useState<boolean>(true)
-
-//   const messages = useAppSelector(state => state.chat.messages)
-//   const typingUsers = useAppSelector(state => state.chat.typingUsers)
-
-//   useEffect(() => {
-//     dispatch(createConnection())
-//     return () => {
-//       dispatch(destroyConnection())
-//     }
-//   }, [dispatch])
-
-//   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-
-//   useEffect(() => {
-//     if (isScrollMode) {
-//       chatContainerRef.current?.scrollTo({
-//         top: chatContainerRef.current.scrollHeight,
-//         behavior: 'smooth',
-//       });
-//     }
-//   }, [isScrollMode, messages]);
-
-//   const handleScroll = () => {
-//     if (chatContainerRef.current) {
-//       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-//       const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-//       setScrollMode(isAtBottom);
-//     }
-//   };
-
-//   const handleSendMessage = () => {
-//     if (message.trim()) {
-//       dispatch(sendMessage(message))
-//       setMessage('')
-//     }
-//   };
-
-//   const handleSendName = () => {
-//     if (name.trim()) {
-//       dispatch(sendClientName(name))
-//     }
-//   };
-
-//   return (
-//     <div className={styles.App}>
-//       <div className={styles['parent-container']}>
-//         <div className={styles['chat-container']} ref={chatContainerRef} onScroll={handleScroll}>
-//           {messages.map(({ id, user, message }) => (
-//             <div className={styles.message} key={id}>
-//               <b>{user.name}: </b>
-//               <span>{message}</span>
-//               <hr />
-//             </div>
-//           ))}
-//           {typingUsers.map(u => {
-//             return <span key={u.id}>{u.name} is typing..., </span>
-//           })}
-//         </div>
-//         <div className={styles['input-container']}>
-//           <input type="text" placeholder='Enter name' value={name} onChange={(e) => setName(e.currentTarget.value)} />
-//           <button onClick={handleSendName}>APPROVE NAME</button>
-//         </div>
-//         <div className={styles['input-container']}>
-//           <textarea
-//             rows={3}
-//             value={message}
-//             placeholder='Enter message'
-//             onChange={(e) => setMessage(e.target.value)}
-//             onKeyDown={() => { dispatch(userTyping()) }}
-//             onKeyUp={() => { dispatch(userStopTyping()) }}
-//           />
-//           <button onClick={handleSendMessage}>SEND</button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 function App() {
   const dispatch = useAppDispatch();
 
@@ -154,7 +67,7 @@ function App() {
   const debouncedStopTyping = useRef(
     debounce(() => {
       dispatch(userStopTyping());
-    }, 2000)
+    }, 500)
   ).current;
 
   const handleTyping = () => {
