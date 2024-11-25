@@ -1,22 +1,23 @@
-import { io, Socket } from 'socket.io-client';
 import { useEffect, useRef, useState } from 'react';
 import styles from './App.module.css';
+import { useAppDispatch, useAppSelector } from './store';
+import { createConnection, destroyConnection, sendClientName, sendMessage } from './chat-reducer';
 
-const SOCKET_URL = 'http://localhost:3010';
 
-type User = {
+export type User = {
   id: string;
   name: string;
 };
 
-type Message = {
+export type Message = {
   id: string;
   message: string;
   user: User;
 };
 
+
 function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const dispatch = useAppDispatch()
 
   const [message, setMessage] = useState<string>('');
 
@@ -24,23 +25,14 @@ function App() {
 
   const [isScrollMode, setScrollMode] = useState<boolean>(true)
 
-  const socketRef = useRef<Socket | null>(null);
+  const messages = useAppSelector(state => state.chat.messages)
 
   useEffect(() => {
-    socketRef.current = io(SOCKET_URL);
-
-    socketRef.current.on('init-messages-published', (messages: Message[]) => {
-      setMessages(messages)
-    })
-
-    socketRef.current.on('new-message-sent', (newMessage: Message) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
-
+    dispatch(createConnection())
     return () => {
-      socketRef.current?.disconnect();
-    };
-  }, []);
+      dispatch(destroyConnection())
+    }
+  }, [dispatch])
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -63,14 +55,14 @@ function App() {
 
   const handleSendMessage = () => {
     if (message.trim()) {
-      socketRef.current?.emit('client-message-sent', message);
-      setMessage('');
+      dispatch(sendMessage(message))
+      setMessage('')
     }
   };
 
   const handleSendName = () => {
     if (name.trim()) {
-      socketRef.current?.emit('client-name-sent', name);
+      dispatch(sendClientName(name))
     }
   };
 
