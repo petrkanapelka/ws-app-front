@@ -65,10 +65,7 @@ export const createConnection = () => (dispatch: Dispatch) => {
             dispatch(typingUserAdded(user));
         },
         (user) => {
-            // dispatch(typingUserDeleted(user));
-            setTimeout(() => {
-                dispatch(typingUserDeleted(user));
-            }, 5000);
+            dispatch(typingUserDeleted(user));
         }
     );
 };
