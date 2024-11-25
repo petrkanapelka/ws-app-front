@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './App.module.css';
 import { useAppDispatch, useAppSelector } from './store';
-import { createConnection, destroyConnection, sendClientName, sendMessage } from './chat-reducer';
+import { createConnection, destroyConnection, sendClientName, sendMessage, userStopTyping, userTyping } from './chat-reducer';
 
 
 export type User = {
@@ -26,6 +26,7 @@ function App() {
   const [isScrollMode, setScrollMode] = useState<boolean>(true)
 
   const messages = useAppSelector(state => state.chat.messages)
+  const typingUsers = useAppSelector(state => state.chat.typingUsers)
 
   useEffect(() => {
     dispatch(createConnection())
@@ -77,6 +78,9 @@ function App() {
               <hr />
             </div>
           ))}
+          {typingUsers.map(u => {
+            return <span key={u.id}>{u.name} is typing..., </span>
+          })}
         </div>
         <div className={styles['input-container']}>
           <input type="text" placeholder='Enter name' value={name} onChange={(e) => setName(e.currentTarget.value)} />
@@ -88,6 +92,8 @@ function App() {
             value={message}
             placeholder='Enter message'
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={() => { dispatch(userTyping()) }}
+            onKeyUp={() => { dispatch(userStopTyping()) }}
           />
           <button onClick={handleSendMessage}>SEND</button>
         </div>
