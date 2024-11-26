@@ -5,6 +5,7 @@ import { Dispatch } from 'redux';
 const initialState = {
     messages: [] as Message[],
     typingUsers: [] as User[],
+    error: '' as string,
 };
 
 type ChatState = typeof initialState;
@@ -33,6 +34,10 @@ export const chatReducer = (state: ChatState = initialState, action: Actions): C
                 typingUsers: state.typingUsers.filter((u) => u.id !== action.user.id),
             };
         }
+        case 'error-received': {
+            console.error(action.error);
+            return state;
+        }
         default:
             return state;
     }
@@ -42,7 +47,8 @@ type Actions =
     | ReturnType<typeof messagesReceived>
     | ReturnType<typeof newMessageReceived>
     | ReturnType<typeof typingUserAdded>
-    | ReturnType<typeof typingUserDeleted>;
+    | ReturnType<typeof typingUserDeleted>
+    | ReturnType<typeof handleServerError>;
 
 export const messagesReceived = (messages: Message[]) => ({ type: 'messages-received', messages } as const);
 
@@ -51,6 +57,8 @@ export const newMessageReceived = (message: Message) => ({ type: 'new-message-re
 export const typingUserAdded = (user: User) => ({ type: 'user-message-typing', user } as const);
 
 export const typingUserDeleted = (user: User) => ({ type: 'user-message-stop-typing', user } as const);
+
+export const handleServerError = (error: string) => ({ type: 'error-received', error } as const);
 
 export const createConnection = () => (dispatch: Dispatch) => {
     socketApi.createConnection();
@@ -66,7 +74,8 @@ export const createConnection = () => (dispatch: Dispatch) => {
         },
         (user) => {
             dispatch(typingUserDeleted(user));
-        }
+        },
+        (error) => dispatch(handleServerError(error))
     );
 };
 export const destroyConnection = () => (dispatch: Dispatch) => {
