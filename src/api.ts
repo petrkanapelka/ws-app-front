@@ -17,13 +17,15 @@ export const socketApi = {
         initMessagesHandler: (messages: Message[]) => void,
         newMessageSentHandler: (message: Message) => void,
         userTypingHandler: (user: User) => void,
-        userStopTypingHandler: (user: User) => void
+        userStopTypingHandler: (user: User) => void,
+        errorHandler: (error: string) => void
     ) {
         if (this.socket) {
             this.socket.on('init-messages-published', initMessagesHandler);
             this.socket.on('new-message-sent', newMessageSentHandler);
             this.socket.on('user-typing', userTypingHandler);
             this.socket.on('user-stop-typing', userStopTypingHandler);
+            this.socket.on('error-message', errorHandler);
         }
     },
 
