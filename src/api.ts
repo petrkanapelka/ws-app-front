@@ -7,7 +7,13 @@ export const SOCKET_URL = 'https://ws-app-back.onrender.com/';
 export const socketApi = {
     socket: null as Socket | null,
     createConnection() {
-        this.socket = io(SOCKET_URL);
+        this.socket = io(SOCKET_URL, {
+            transports: ['websocket'],
+            reconnection: true,
+        });
+        this.socket.on('connect_error', (err) => {
+            console.error('Connection error:', err);
+        });
     },
     destroyConnection() {
         this.socket?.disconnect();
