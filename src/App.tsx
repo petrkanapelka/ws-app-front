@@ -136,7 +136,7 @@ function App() {
 
 
 
-          <form onSubmit={messageForm.handleSubmit(handleSendMessage)} className={styles['input-container']}>
+          <form onSubmit={messageForm.handleSubmit(handleSendMessage)} className={styles['input-container']} style={{height: 'auto'}}>
             <Box sx={{width: '100%'}}>
               <TextField
                 id="outlined-basic"

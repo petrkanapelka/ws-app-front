@@ -6,8 +6,8 @@ import Button from '@mui/material/Button';
 
 export default function ButtonAppBar() {
     return (
-        <Box sx={{ flexGrow: 1, position: 'fixed', width: '100%', backgroundColor: '#333B4D' }}>
-            <AppBar position="fixed" sx={{ backgroundColor: '#333B4D' }}>
+        <Box sx={{ flexGrow: 1, width: '100%', backgroundColor: '#333B4D' }}>
+            <AppBar  sx={{ backgroundColor: '#333B4D', marginBottom: '20px' }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         Rapid Chad
