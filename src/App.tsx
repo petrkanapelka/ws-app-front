@@ -15,6 +15,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Box, Divider, Typography } from '@mui/material';
 import AppTheme from './theme/AppTheme';
+import { useNavigate } from 'react-router-dom';
 
 export type User = {
   id: string;
@@ -27,7 +28,7 @@ export type Message = {
   user: User;
 };
 
-function App() {
+export function App() {
   const nicknameForm = useForm<{ nickname: string }>({ mode: 'onChange' });
 
   const messageForm = useForm<{ message: string }>({ mode: 'onChange' });
@@ -40,6 +41,44 @@ function App() {
   const typingUsers = useAppSelector((state) => state.chat.typingUsers);
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/register');
+        return;
+      }
+
+      const response = await fetch('/check-auth', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        navigate('/main');
+      } else {
+        navigate('/register');
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+  const logout = async () => {
+    const token = localStorage.getItem('token');
+    await fetch('/logout', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    localStorage.removeItem('token'); 
+    navigate('/register'); 
+  };
 
   useEffect(() => {
     dispatch(createConnection());
@@ -136,8 +175,8 @@ function App() {
 
 
 
-          <form onSubmit={messageForm.handleSubmit(handleSendMessage)} className={styles['input-container']} style={{height: 'auto'}}>
-            <Box sx={{width: '100%'}}>
+          <form onSubmit={messageForm.handleSubmit(handleSendMessage)} className={styles['input-container']} style={{ height: 'auto' }}>
+            <Box sx={{ width: '100%' }}>
               <TextField
                 id="outlined-basic"
                 label="Enter message"
@@ -179,4 +218,3 @@ function App() {
   );
 }
 
-export default App;
