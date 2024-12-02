@@ -34,7 +34,7 @@ export const ChatApp = () => {
         const checkAuth = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
-                // navigate('/register');
+                navigate('/register');
                 return;
             }
 
@@ -47,7 +47,7 @@ export const ChatApp = () => {
             if (response.ok) {
                 navigate('/');
             } else {
-                // navigate('/register');
+                navigate('/register');
             }
         };
 
