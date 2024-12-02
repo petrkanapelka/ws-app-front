@@ -7,6 +7,7 @@ import { store } from './store';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routing/router';
+import { SnackbarProvider } from 'notistack';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -16,7 +17,9 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <StyledEngineProvider injectFirst>
-        <RouterProvider router={router} />
+        <SnackbarProvider maxSnack={3}>
+          <RouterProvider router={router} />
+        </SnackbarProvider>
       </StyledEngineProvider>
     </Provider>
   </React.StrictMode>
