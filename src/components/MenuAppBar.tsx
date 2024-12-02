@@ -6,11 +6,11 @@ import Button from '@mui/material/Button';
 
 export default function ButtonAppBar() {
     return (
-        <Box sx={{ flexGrow: 1, width: '100%', backgroundColor: '#333B4D' }}>
-            <AppBar  sx={{ backgroundColor: '#333B4D', marginBottom: '20px' }}>
-                <Toolbar>
+        <Box sx={{ flexGrow: 1, width: '100%', backgroundColor: '#333B4D' ,height: '10vh', display: 'flex', alignItems: 'center' }}>
+            <AppBar  sx={{ backgroundColor: '#333B4D', height: '10vh'}}>
+                <Toolbar sx={{display: 'flex', alignItems: 'center'}}>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Rapid Chad
+                        Rapid Chat
                     </Typography>
                     <Button color="inherit">Login</Button>
                 </Toolbar>
