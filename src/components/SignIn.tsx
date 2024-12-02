@@ -1,20 +1,19 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import AppTheme from '../theme/AppTheme';
-import ColorModeSelect from '../theme/ColorModeSelect';
-import ForgotPassword from './ForgotPassword';
+import { axiosApi } from '../api/instance';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../store';
+import { setNickName } from '../chat-reducer';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
@@ -60,38 +59,50 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 
 export default function SignIn(props: { disableCustomTheme?: boolean }) {
     const [emailError, setEmailError] = React.useState(false);
+    const [nickNameError, setNickNameError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+    const [nickNameErrorMessage, setNickNameErrorMessage] = React.useState('');
     const [passwordError, setPasswordError] = React.useState(false);
     const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-    const [open, setOpen] = React.useState(false);
 
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
+    const navigate = useNavigate();
 
-    const handleClose = () => {
-        setOpen(false);
-    };
+    const dispatch = useAppDispatch();
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        if (emailError || passwordError) {
-            event.preventDefault();
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const nickname = (document.getElementById('nickname') as HTMLInputElement).value;
+        const email = (document.getElementById('email') as HTMLInputElement).value;
+        const password = (document.getElementById('password') as HTMLInputElement).value;
+
+        if (!validateInputs(nickname, email, password)) {
             return;
         }
-        const data = new FormData(event.currentTarget);
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
-        });
+
+        try {
+            const response = await axiosApi.registerUser({ name: nickname, email, password });
+            console.log('Registration successful:', response.data);
+            dispatch(setNickName(nickname))
+            navigate('/login');
+        } catch (error: any) {
+            console.error('Registration error:', error.response?.data || error.message);
+        }
     };
 
-    const validateInputs = () => {
-        const email = document.getElementById('email') as HTMLInputElement;
-        const password = document.getElementById('password') as HTMLInputElement;
-
+    const validateInputs = (nickname: string, email: string, password: string): boolean => {
         let isValid = true;
 
-        if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+        if (!nickname || nickname.length < 3) {
+            setNickNameError(true);
+            setNickNameErrorMessage('Nickname must be at least 3 characters long.');
+            isValid = false;
+        } else {
+            setNickNameError(false);
+            setNickNameErrorMessage('');
+        }
+
+        if (!email || !/\S+@\S+\.\S+/.test(email)) {
             setEmailError(true);
             setEmailErrorMessage('Please enter a valid email address.');
             isValid = false;
@@ -100,7 +111,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             setEmailErrorMessage('');
         }
 
-        if (!password.value || password.value.length < 6) {
+        if (!password || password.length < 6) {
             setPasswordError(true);
             setPasswordErrorMessage('Password must be at least 6 characters long.');
             isValid = false;
@@ -116,7 +127,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         <AppTheme {...props}>
             <CssBaseline />
             <SignInContainer direction="column" justifyContent="space-between">
-                <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
                 <Card variant="outlined">
                     <Typography
                         component="h1"
@@ -137,6 +147,23 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                         }}
                     >
                         <FormControl>
+                            <FormLabel htmlFor="nickname">Nickname</FormLabel>
+                            <TextField
+                                error={nickNameError}
+                                helperText={nickNameErrorMessage}
+                                id="nickname"
+                                type="text"
+                                name="nickname"
+                                placeholder="your nickname"
+                                autoComplete="off"
+                                autoFocus
+                                required
+                                fullWidth
+                                variant="outlined"
+                                color={nickNameError ? 'error' : 'primary'}
+                            />
+                        </FormControl>
+                        <FormControl>
                             <FormLabel htmlFor="email">Email</FormLabel>
                             <TextField
                                 error={emailError}
@@ -146,7 +173,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                                 name="email"
                                 placeholder="your@email.com"
                                 autoComplete="email"
-                                autoFocus
                                 required
                                 fullWidth
                                 variant="outlined"
@@ -163,38 +189,23 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                                 type="password"
                                 id="password"
                                 autoComplete="current-password"
-                                autoFocus
                                 required
                                 fullWidth
                                 variant="outlined"
                                 color={passwordError ? 'error' : 'primary'}
                             />
                         </FormControl>
-                        <FormControlLabel
-                            control={<Checkbox value="remember" color="primary" />}
-                            label="Remember me"
-                        />
-                        <ForgotPassword open={open} handleClose={handleClose} />
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
-                            onClick={validateInputs}
                         >
                             Sign in
                         </Button>
-                        <Link
-                            component="button"
-                            type="button"
-                            onClick={handleClickOpen}
-                            variant="body2"
-                            sx={{ alignSelf: 'center' }}
-                        >
-                            Forgot your password?
-                        </Link>
                     </Box>
                 </Card>
             </SignInContainer>
         </AppTheme>
     );
 }
+
