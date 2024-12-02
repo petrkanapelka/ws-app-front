@@ -6,7 +6,7 @@ const initialState = {
     messages: [] as Message[],
     typingUsers: [] as User[],
     error: '' as string,
-    userIsRegister: false,
+    isUserLogin: false,
     nickname: '' as string,
 };
 
@@ -45,6 +45,10 @@ export const chatReducer = (state: ChatState = initialState, action: Actions): C
             return { ...state, nickname: action.nickname };
         }
 
+        case 'set-user-login': {
+            return { ...state, isUserLogin: action.isUserLogin };
+        }
+
         default:
             return state;
     }
@@ -55,8 +59,9 @@ type Actions =
     | ReturnType<typeof newMessageReceived>
     | ReturnType<typeof typingUserAdded>
     | ReturnType<typeof typingUserDeleted>
-    | ReturnType<typeof handleServerError>
-    | ReturnType<typeof setNickName>;
+    | ReturnType<typeof setError>
+    | ReturnType<typeof setNickName>
+    | ReturnType<typeof setUserLogin>;
 
 export const messagesReceived = (messages: Message[]) => ({ type: 'messages-received', messages } as const);
 
@@ -66,9 +71,11 @@ export const typingUserAdded = (user: User) => ({ type: 'user-message-typing', u
 
 export const typingUserDeleted = (user: User) => ({ type: 'user-message-stop-typing', user } as const);
 
-export const handleServerError = (error: string) => ({ type: 'error-received', error } as const);
+export const setError = (error: string) => ({ type: 'error-received', error } as const);
 
 export const setNickName = (nickname: string) => ({ type: 'nickname-received', nickname } as const);
+
+export const setUserLogin = (isUserLogin: boolean) => ({ type: 'set-user-login', isUserLogin } as const);
 
 export const createConnection = () => (dispatch: Dispatch) => {
     socketApi.createConnection();
@@ -85,7 +92,7 @@ export const createConnection = () => (dispatch: Dispatch) => {
         (user) => {
             dispatch(typingUserDeleted(user));
         },
-        (error) => dispatch(handleServerError(error))
+        (error) => dispatch(setError(error))
     );
 };
 export const destroyConnection = () => (dispatch: Dispatch) => {
