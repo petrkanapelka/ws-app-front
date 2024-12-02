@@ -1,11 +1,13 @@
-import { socketApi } from './api';
-import { Message, User } from './App';
+import { socketApi } from './api/api';
 import { Dispatch } from 'redux';
+import { Message, User } from './types/types';
 
 const initialState = {
     messages: [] as Message[],
     typingUsers: [] as User[],
     error: '' as string,
+    userIsRegister: false,
+    nickname: '' as string,
 };
 
 type ChatState = typeof initialState;
@@ -38,6 +40,11 @@ export const chatReducer = (state: ChatState = initialState, action: Actions): C
             console.error(action.error);
             return state;
         }
+
+        case 'nickname-received': {
+            return { ...state, nickname: action.nickname };
+        }
+
         default:
             return state;
     }
@@ -48,7 +55,8 @@ type Actions =
     | ReturnType<typeof newMessageReceived>
     | ReturnType<typeof typingUserAdded>
     | ReturnType<typeof typingUserDeleted>
-    | ReturnType<typeof handleServerError>;
+    | ReturnType<typeof handleServerError>
+    | ReturnType<typeof setNickName>;
 
 export const messagesReceived = (messages: Message[]) => ({ type: 'messages-received', messages } as const);
 
@@ -60,6 +68,8 @@ export const typingUserDeleted = (user: User) => ({ type: 'user-message-stop-typ
 
 export const handleServerError = (error: string) => ({ type: 'error-received', error } as const);
 
+export const setNickName = (nickname: string) => ({ type: 'nickname-received', nickname } as const);
+
 export const createConnection = () => (dispatch: Dispatch) => {
     socketApi.createConnection();
     socketApi.subscribe(
@@ -67,7 +77,7 @@ export const createConnection = () => (dispatch: Dispatch) => {
             dispatch(messagesReceived(messages));
         },
         (message) => {
-            dispatch(newMessageReceived(message));
+            return dispatch(newMessageReceived(message));
         },
         (user) => {
             dispatch(typingUserAdded(user));
@@ -84,6 +94,7 @@ export const destroyConnection = () => (dispatch: Dispatch) => {
 
 export const sendClientName = (name: string) => (dispatch: Dispatch) => {
     socketApi.sendName(name);
+    dispatch(setNickName(name));
 };
 
 export const sendMessage = (message: string) => (dispatch: Dispatch) => {
