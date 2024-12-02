@@ -13,7 +13,8 @@ import AppTheme from '../theme/AppTheme';
 import { axiosApi } from '../api/instance';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../store';
-import { setNickName } from '../chat-reducer';
+import { setError, setNickName } from '../chat-reducer';
+import { useSnackbar, VariantType } from 'notistack';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
@@ -67,6 +68,12 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
     const navigate = useNavigate();
 
+    const { enqueueSnackbar } = useSnackbar();
+
+    const handleClickVariant = (variant: VariantType, message: string) => () => {
+        enqueueSnackbar(message, { variant });
+    };
+
     const dispatch = useAppDispatch();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -83,10 +90,16 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         try {
             const response = await axiosApi.registerUser({ name: nickname, email, password });
             console.log('Registration successful:', response.data);
-            dispatch(setNickName(nickname))
+            dispatch(setNickName(response.data.name))
+            handleClickVariant('success', response.data.message)()
             navigate('/login');
+            handleClickVariant('success', 'Please, log in')()
         } catch (error: any) {
             console.error('Registration error:', error.response?.data || error.message);
+            let errorMessage = error.response?.data.messageError || error.message
+            console.log("🚀 ~ handleSubmit ~ errorMessage ➔", errorMessage);
+            handleClickVariant('error', errorMessage)()
+            dispatch(setError(errorMessage))
         }
     };
 
