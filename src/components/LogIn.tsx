@@ -11,9 +11,11 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import AppTheme from '../theme/AppTheme';
-import { axiosApi } from '../api/instance';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar, VariantType } from 'notistack';
+import { setError, setNickName, setUserLogin } from '../chat-reducer';
+import { useAppDispatch } from '../store';
+import { axiosApi } from '../api/instance';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
@@ -63,7 +65,15 @@ export default function LogIn(props: { disableCustomTheme?: boolean }) {
     const [passwordError, setPasswordError] = React.useState(false);
     const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
 
+    const dispatch = useAppDispatch();
+
+
     const navigate = useNavigate()
+    const { enqueueSnackbar } = useSnackbar();
+
+    const handleClickVariant = (variant: VariantType, message: string) => () => {
+        enqueueSnackbar(message, { variant });
+    };
 
 
 
@@ -73,6 +83,7 @@ export default function LogIn(props: { disableCustomTheme?: boolean }) {
         const email = (document.getElementById('email') as HTMLInputElement).value;
         const password = (document.getElementById('password') as HTMLInputElement).value;
 
+
         if (!validateInputs(email, password)) {
             return;
         }
@@ -81,9 +92,15 @@ export default function LogIn(props: { disableCustomTheme?: boolean }) {
             const response = await axiosApi.loginUser({ email, password });
             console.log('Registration successful:', response.data);
             localStorage.setItem('token', response.data.token)
-            // navigate('/')
+            dispatch(setNickName(response.data.name))
+            navigate('/')
+            handleClickVariant('success', 'Login is successful')()
+            dispatch(setUserLogin(true))
         } catch (error: any) {
             console.error('Registration error:', error.response?.data || error.message);
+            let errorMessage = error.response?.data.messageError || error.message
+            handleClickVariant('error', errorMessage)()
+            dispatch(setError(errorMessage))
         }
     };
 
@@ -179,7 +196,7 @@ export default function LogIn(props: { disableCustomTheme?: boolean }) {
                             fullWidth
                             variant="contained"
                         >
-                            Sign in
+                            Log in
                         </Button>
                     </Box>
                 </Card>
