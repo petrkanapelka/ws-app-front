@@ -2,8 +2,8 @@ import { io, Socket } from 'socket.io-client';
 import { Message, User } from '../types/types';
 
 // export const SOCKET_URL = process.env.REACT_APP_CLIENT_URL; /* || 'http://localhost:3000' */
-// export const SOCKET_URL = 'https://ws-app-back.onrender.com/';
-export const SOCKET_URL = 'http://localhost:3010';
+export const SOCKET_URL = 'https://ws-app-back.onrender.com/';
+// export const SOCKET_URL = 'http://localhost:3010';
 
 export const socketApi = {
     socket: null as Socket | null,
