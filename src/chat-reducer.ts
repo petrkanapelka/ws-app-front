@@ -1,6 +1,7 @@
 import { socketApi } from './api/api';
 import { Dispatch } from 'redux';
 import { Message, User } from './types/types';
+import { axiosApi } from './api/instance';
 
 const initialState = {
     messages: [] as Message[],
@@ -79,6 +80,8 @@ export const setUserLogin = (isUserLogin: boolean) => ({ type: 'set-user-login',
 
 export const createConnection = () => (dispatch: Dispatch) => {
     socketApi.createConnection();
+    const token = localStorage.getItem('token');
+    if (token) socketApi.authenticate(token);
     socketApi.subscribe(
         (messages) => {
             dispatch(messagesReceived(messages));
@@ -95,6 +98,7 @@ export const createConnection = () => (dispatch: Dispatch) => {
         (error) => dispatch(setError(error))
     );
 };
+
 export const destroyConnection = () => (dispatch: Dispatch) => {
     socketApi.destroyConnection();
 };
@@ -114,4 +118,15 @@ export const userTyping = () => (dispatch: Dispatch) => {
 
 export const userStopTyping = () => (dispatch: Dispatch) => {
     socketApi.userStopTyping();
+};
+
+export const logout = () => async (dispatch: Dispatch) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (token) {
+            await axiosApi.logOut({ token });
+        }
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
 };
