@@ -16,6 +16,7 @@ import { useSnackbar, VariantType } from 'notistack';
 import { setError, setNickName, setUserLogin } from '../chat-reducer';
 import { useAppDispatch } from '../store';
 import { axiosApi } from '../api/instance';
+import { socketApi } from '../api/api';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
@@ -90,14 +91,12 @@ export default function LogIn(props: { disableCustomTheme?: boolean }) {
 
         try {
             const response = await axiosApi.loginUser({ email, password });
-            console.log('Registration successful:', response.data);
             localStorage.setItem('token', response.data.token)
             dispatch(setNickName(response.data.name))
             navigate('/')
             handleClickVariant('success', 'Login is successful')()
             dispatch(setUserLogin(true))
         } catch (error: any) {
-            console.error('Registration error:', error.response?.data || error.message);
             let errorMessage = error.response?.data.messageError || error.message
             handleClickVariant('error', errorMessage)()
             dispatch(setError(errorMessage))
