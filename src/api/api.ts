@@ -52,4 +52,8 @@ export const socketApi = {
     userStopTyping() {
         this.socket?.emit('user-stop-typed');
     },
+
+    authenticate(token: string) {
+        this.socket?.emit('client-auth', token);
+    },
 };
