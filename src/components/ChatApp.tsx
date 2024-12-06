@@ -1,17 +1,20 @@
-// @flow 
 import { Box, Divider, Typography, TextField, Button } from '@mui/material';
 import { debounce } from 'lodash';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { destroyConnection, userStopTyping, userTyping, sendClientName, sendMessage, createConnection, setNickName } from '../chat-reducer';
+import { destroyConnection, userStopTyping, userTyping, sendClientName, sendMessage, createConnection, setNickName, setUserLogin, setError } from '../chat-reducer';
 import { useAppDispatch, useAppSelector } from '../store';
 import styles from '../App.module.css';
+import { useEffect, useState } from 'react';
+import { socketApi } from '../api/api';
+import { axiosApi } from '../api/instance';
 
 
 
 
 export const ChatApp = () => {
+
     const nicknameForm = useForm<{ nickname: string }>({ mode: 'onChange' });
 
     const messageForm = useForm<{ message: string }>({ mode: 'onChange' });
@@ -24,49 +27,41 @@ export const ChatApp = () => {
     const typingUsers = useAppSelector((state) => state.chat.typingUsers);
     const nickname = useAppSelector((state) => state.chat.nickname);
 
-    console.log('Current nickname:', nickname);
+    const [mode, setMode] = useState(false)
+
+    const [value, setValue] = useState(nickname)
 
     const chatContainerRef = React.useRef<HTMLDivElement | null>(null);
 
     const navigate = useNavigate();
 
-    React.useEffect(() => {
-        const checkAuth = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                navigate('/register');
-                return;
-            }
-
-            const response = await fetch('/check-auth', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (response.ok) {
-                navigate('/');
-            } else {
-                navigate('/register');
-            }
-        };
-
-        checkAuth();
-    }, [navigate]);
-
-    const logout = async () => {
+    useEffect(() => {
         const token = localStorage.getItem('token');
-        await fetch('/logout', {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        localStorage.removeItem('token');
-        navigate('/register');
-    };
+        if (!token) {
+            navigate('/register');
+            return;
+        }
 
-    React.useEffect(() => {
+        axiosApi.authUser({ token })
+            .then((res) => {
+                dispatch(setUserLogin(true))
+                dispatch(setNickName(res.data.name))
+
+            })
+            .catch((err) => {
+                navigate('/register');
+                dispatch(setError(err))
+            })
+
+        socketApi.socket?.on('error-message', (error) => {
+            console.error('Authentication failed:', error);
+            navigate('/register');
+        });
+    }, [dispatch, navigate]);
+
+
+
+    useEffect(() => {
         dispatch(createConnection());
         return () => {
             dispatch(destroyConnection());
@@ -103,6 +98,7 @@ export const ChatApp = () => {
 
     const handleSendName = (data: { nickname: string }) => {
         dispatch(sendClientName(data.nickname));
+        setMode(false)
     };
 
     const handleSendMessage = (data: { message: string }) => {
@@ -112,27 +108,28 @@ export const ChatApp = () => {
 
     const renderMessages = () =>
         messages.map(({ id, user, message }) => (
-            <>
+            <div key={id}>
                 <Box className={styles.message} key={id}>
                     <b>{user.name}: </b>
                     <span>{message}</span>
                 </Box>
                 <Divider />
-            </>
+            </div>
         ));
 
     const renderTypingUsers = () =>
         typingUsers.map((u) => <Typography variant='caption' key={u.id}>{u.name} is typing..., </Typography>);
     return (
         <Box className={styles['parent-container']}>
-            {nickname ?
+            {!mode ?
                 <div className={styles['input-container']}>
                     <Typography variant='h3'>{nickname}</Typography>
-                    <Button variant="contained" onClick={() => dispatch(setNickName(''))}>EDIT</Button>
+                    <Button variant="contained" onClick={() => setMode(true)}>EDIT</Button>
                 </div>
                 : <form onSubmit={nicknameForm.handleSubmit(handleSendName)} className={styles['input-container']}>
                     <Box>
                         <TextField
+                            value={value}
                             type="text"
                             label="Enter nickname"
                             variant="outlined"
@@ -150,9 +147,10 @@ export const ChatApp = () => {
                                 },
                             })}
                             aria-invalid={!!nicknameForm.formState.errors.nickname}
+                            onChange={(e) => { setValue(e.currentTarget.value) }}
                         />
                     </Box>
-                    <Button variant="contained" type="submit">SET</Button>
+                    <Button variant="contained" type="submit" >SET</Button>
 
                 </form>
             }
