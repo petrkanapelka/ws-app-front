@@ -28,10 +28,10 @@ export default function ButtonAppBar() {
                         Rapid Chat
                     </Typography>
                     {isUserLogin ?
-                        <Button color="inherit" onClick={logoutHandler}>Logout</Button>
+                        <Button color="primary" onClick={logoutHandler}>Logout</Button>
                         : <>
-                            <Button color="inherit" onClick={() => { navigate('/register') }}>Register</Button>
-                            <Button color="inherit" onClick={() => { navigate('/login') }}>Login</Button>
+                            <Button color="primary" onClick={() => { navigate('/register') }}>Register</Button>
+                            <Button color="primary" onClick={() => { navigate('/login') }}>Login</Button>
 
                         </>
                     }
