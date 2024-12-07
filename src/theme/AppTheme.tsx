@@ -6,7 +6,7 @@ import { feedbackCustomizations } from './customizations/feedback';
 import { inputsCustomizations } from './customizations/inputs';
 import { navigationCustomizations } from './customizations/navigation';
 import { surfacesCustomizations } from './customizations/surfaces';
-import { typography, shadows, shape } from './themePrimitives';
+import { getDesignTokens } from './themePrimitives';
 
 interface AppThemeProps {
     children: React.ReactNode;
@@ -23,16 +23,7 @@ export default function AppTheme({
         return disableCustomTheme
             ? {}
             : createTheme({
-                palette: {
-                    mode: 'dark',
-                },
-                cssVariables: {
-                    colorSchemeSelector: 'data-mui-color-scheme',
-                    cssVarPrefix: 'template',
-                },
-                typography,
-                shadows,
-                shape,
+                ...getDesignTokens('dark'),
                 components: {
                     ...inputsCustomizations,
                     ...dataDisplayCustomizations,
@@ -48,7 +39,7 @@ export default function AppTheme({
         return <React.Fragment>{children}</React.Fragment>;
     }
     return (
-        <ThemeProvider theme={theme} disableTransitionOnChange>
+        <ThemeProvider theme={theme}>
             {children}
         </ThemeProvider>
     );

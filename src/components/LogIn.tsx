@@ -16,7 +16,6 @@ import { useSnackbar, VariantType } from 'notistack';
 import { setError, setNickName, setUserLogin } from '../chat-reducer';
 import { useAppDispatch } from '../store';
 import { axiosApi } from '../api/instance';
-import { socketApi } from '../api/api';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
